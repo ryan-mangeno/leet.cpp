@@ -15,6 +15,13 @@ Problems will be added on an ongoing basis ...
 
 ## Usage
 
+```bash
+python3 -m venv .env
+source .env/bin/activate
+pip install -r reqs.txt
+streamlit run app.py 
+```
+
 1. Read the `prompt.md` for the problem you want to solve
 2. Implement your solution in `starter.h` or `submission.h`
 3. Compile and run the test harness to verify your solution
