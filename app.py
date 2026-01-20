@@ -129,7 +129,7 @@ with col2:
                 st.session_state[output_key] = f"🔥 BUILD ERROR:\n{build.stderr}"
             else:
                 try:
-                    run = subprocess.run([runner_exe], capture_output=True, text=True, timeout=2)
+                    run = subprocess.run([runner_exe], capture_output=True, text=True, timeout=20)
                     st.session_state[output_key] = run.stdout + "\n" + run.stderr
                 except subprocess.TimeoutExpired:
                      st.session_state[output_key] = "⏱TIMEOUT: Possible infinite loop/deadlock."

@@ -18,20 +18,43 @@ int main() {
     // If deadlock exists, this program will HANG indefinitely (Timeout).
     
     std::thread t1([&]() {
-        for(int i=0; i<100; ++i) bank.transfer(alice, bob, 1);
+        for(int i=0; i<500; ++i) bank.transfer(alice, bob);
     });
     
     std::thread t2([&]() {
-        for(int i=0; i<100; ++i) bank.transfer(bob, alice, 1);
+        for(int i=0; i<500; ++i) bank.transfer(bob, alice);
+    });
+
+    std::thread t3([&]() {
+        for(int i=0; i<500; ++i) bank.transfer(alice, bob);
+    });
+    
+    std::thread t4([&]() {
+        for(int i=0; i<500; ++i) bank.transfer(bob, alice);
+    });
+
+    std::thread t5([&]() {
+        for(int i=0; i<500; ++i) bank.transfer(alice, bob);
+    });
+    
+    std::thread t6([&]() {
+        for(int i=0; i<500; ++i) bank.transfer(bob, alice);
     });
 
     t1.join();
     t2.join();
-    
-    if (alice.balance + bob.balance == 2000) {
+    t3.join();
+    t4.join();
+    t5.join();
+    t6.join();
+
+    int expected = 10000;
+    int observed = alice.balance + bob.balance;
+
+    if (expected == observed) {
         std::cout << "✅ PASSED: Transfers completed without deadlock." << std::endl;
     } else {
-        std::cout << "❌ FAILED: Balance corrupted (Race Condition)." << std::endl;
+        std::cout << "❌ FAILED: Balance corrupted (Race Condition)\n" << "Expected: " << expected << " Observed: " << observed << std::endl;
     }
     
     return 0;
