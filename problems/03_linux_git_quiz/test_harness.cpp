@@ -2,7 +2,7 @@
 #include <string>
 #include "submission.h"
 
-using namespace getcracked;
+using namespace leet_cpp;
 
 void check(std::string actual, std::string expected, const char* name) {
     if (actual == expected) {
