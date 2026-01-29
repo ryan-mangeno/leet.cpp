@@ -1,0 +1,1 @@
+forbidden=new,delete,malloc,free

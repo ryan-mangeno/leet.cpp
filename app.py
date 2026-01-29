@@ -3,9 +3,10 @@ import subprocess
 import os
 from streamlit_ace import st_ace
 
-st.set_page_config(layout="wide", page_title="Local C++ Dojo", page_icon="⚡")
+st.set_page_config(layout="wide", page_title="Leet.cpp", page_icon="⚡")
 
 PROBLEMS_DIR = "problems"
+UTIL_DIR = "util"
 
 st.markdown("""
 <style>
@@ -83,6 +84,20 @@ with col1:
 with col2:
     st.markdown(f"## Code Editor ({selected_problem}/submission.h)")
     
+    height_key = f"height_{selected_problem}"
+    if height_key not in st.session_state:
+        st.session_state[height_key] = 600
+
+    hcol1, hcol2, hcol3 = st.columns(3)
+    with hcol1:
+        if st.button("➕ Taller"):
+            st.session_state[height_key] += 200
+    with hcol2:
+        if st.button("➖ Shorter") and st.session_state[height_key] > 300:
+            st.session_state[height_key] -= 200
+    with hcol3:
+        if st.button("🖥 Fullscreen"):
+            st.session_state[height_key] = 900
     code_input = st_ace(
         value=st.session_state[session_key],
         language="c_cpp",
@@ -90,19 +105,23 @@ with col2:
         keybinding="vscode",
         font_size=14,
         tab_size=4,
-        height=600,
         show_gutter=True,
         wrap=True,
         auto_update=False,
-        key=f"ace_{session_key}"
+        key=f"ace_{session_key}",
+        height=st.session_state[height_key]
     )
     
     st.session_state[session_key] = code_input
 
     if st.button("Run Tests", use_container_width=True):
         # should be based on problem but quick fix for now 
-        forbidden = ["std::mutex", "std::lock_guard", "memory_order_seq_cst"]
-        
+        meta_data_pth = os.path.join(current_problem_dir, "metadata.txt")
+        forbidden = []
+        if os.path.exists(meta_data_pth):
+            with open(meta_data_pth, "r") as meta_data:
+                forbidden = meta_data.read().strip().split("=")[1].split(",")
+
         if "spsc" in selected_problem:
             violations = [term for term in forbidden if term in code_input]
         else:
@@ -120,7 +139,8 @@ with col2:
                 "-pthread", 
                 f"-I{current_problem_dir}", 
                 test_harness_path, 
-                "-o", runner_exe
+                "-o", runner_exe,
+                "-I", UTIL_DIR
             ]
             
             build = subprocess.run(compile_cmd, capture_output=True, text=True)

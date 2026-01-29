@@ -20,6 +20,6 @@ The class should:
 ## Example Usage
 ```cpp
 ResourceHandle handle("output.txt");
-handle.write("Hello, Shield AI!");
+handle.write("Hello!");
 // File automatically closed when handle goes out of scope
 ```

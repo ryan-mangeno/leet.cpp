@@ -1,5 +1,7 @@
 #include <iostream>
 #include <memory>
+#include <sstream>
+
 #include "submission.h"
 
 using namespace leet_cpp;

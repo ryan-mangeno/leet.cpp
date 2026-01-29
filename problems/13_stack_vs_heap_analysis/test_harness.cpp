@@ -3,6 +3,8 @@
 #include <chrono>
 #include <cassert>
 
+void demonstrateStackLimits();
+
 void test_basic_usage() {
     std::cout << "Test 1: Basic stack and heap creation..." << std::flush;
     
@@ -61,6 +63,7 @@ int main() {
     test_basic_usage();
     test_performance();
     test_dynamic_sizing();
+    demonstrateStackLimits();
     std::cout << "\n✓ All tests passed!\n";
     return 0;
 }

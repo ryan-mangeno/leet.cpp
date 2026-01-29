@@ -5,7 +5,6 @@
 
 ## Description
 Create utilities to measure and report function performance.
-This is critical for systems like EdgeOS where performance matters.
 
 ## Requirements
 1. `ScopedTimer` class that measures time in a scope
