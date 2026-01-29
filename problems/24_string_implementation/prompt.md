@@ -69,7 +69,7 @@ String s = create();  // Should move, not copy!
 Add:
 - `operator+`: String concatenation
 - `operator==`: Comparison
-- `operator[]`: Character access
+- `operator[]`: Character access ... throw an `ExpectedException(error_message)` if out of bounds
 - Empty string handling
 - Null pointer handling
 

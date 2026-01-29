@@ -5,6 +5,9 @@
 #include <cstddef>
 #include <stdexcept>
 #include <iostream>
+#include <test_framework.h>
+
+using namespace test_framework;
 
 namespace leet_cpp {
 
