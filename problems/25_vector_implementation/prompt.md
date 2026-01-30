@@ -39,7 +39,7 @@ v.push_back("hello");  // Must properly construct string
 **Key Concepts:**
 - Must explicitly call destructors: `data_[i].~T()`
 - Use placement new: `new (&data_[i]) T(value)`
-- Can't just `delete[]` - must destroy objects first!
+- Can't just `delete[]` - must destr oy objects first!
 
 ---
 

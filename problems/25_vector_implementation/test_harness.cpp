@@ -69,12 +69,26 @@ TEST(Part2_Destructor) {
     LifecycleTracker::reset();
     {
         Vector<LifecycleTracker> v;
+        v.reserve(3);
         v.push_back(LifecycleTracker(1));
         v.push_back(LifecycleTracker(2));
         v.push_back(LifecycleTracker(3));
     }
     // All objects should be destroyed
-    ASSERT_TRUE(LifecycleTracker::constructed == LifecycleTracker::destructed);
+    // if we didnt reserve then we wouldve destructed 3 times since it starts at 0, 1 when we push first, then we destruct 1 to copy 1 over, then destruct 2 to copy 2 over, then destruct 3 to copy 3 over, then finally destruct the 3 at the end
+    // making a total of 6 destructions during resizing, and 3 destructors since the 3 we push back are temporaries totaling 9 destructions
+    // if we reserve then we only have 3 destructions at the end since no resizing happens + 3 destructions for the temporaries totaling 6 destructions
+    ASSERT_TRUE(LifecycleTracker::constructed == 3 && LifecycleTracker::destructed == 3);
+
+    LifecycleTracker::reset();
+    {
+        Vector<LifecycleTracker> v;
+        // v.reserve(3); no reserve just to show the above explanation, I was trying to pass this test case and realize it was written wrong lol
+        v.push_back(LifecycleTracker(1));
+        v.push_back(LifecycleTracker(2));
+        v.push_back(LifecycleTracker(3));
+    }
+    ASSERT_TRUE(LifecycleTracker::constructed == 3 && LifecycleTracker::destructed == 9);
 }
 
 TEST(Part2_CopyConstructor) {

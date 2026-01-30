@@ -6,6 +6,9 @@
 #include <memory>
 #include <algorithm>
 
+#include <test_framework.h>
+using namespace test_framework; // to throw ExpectedException
+
 namespace leet_cpp {
 
 template<typename T>
