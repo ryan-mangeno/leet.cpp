@@ -7,7 +7,9 @@ namespace leet_cpp {
 
 struct Account {
     std::mutex m;
-    float balance{5000.0f};
+    int32_t balance{5000};
+
+    Account(int32_t initial_balance) : balance(initial_balance) {}
 };
 
 class Bank {
@@ -20,9 +22,8 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(1)); // Force context switch to trigger deadlock
         to.m.lock();
 
-        float half = from.balance/2.0f;
-        from.balance -= half;
-        to.balance += half;
+        from.balance -= 5;
+        to.balance += 5;
 
         from.m.unlock();
         to.m.unlock();

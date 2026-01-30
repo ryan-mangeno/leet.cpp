@@ -1,83 +1,102 @@
-#include <iostream>
-#include <vector>
+#include <test_framework.h>
 #include "submission.h"
+#include <vector>
 
 using namespace leet_cpp;
-
-void log_result(const char* name, bool passed, const char* msg = "") {
-    if (passed) {
-        std::cout << "✅ [PASS] " << name << std::endl;
-    } else {
-        std::cout << "❌ [FAIL] " << name << ": " << msg << std::endl;
-        exit(1);
-    }
-}
+using namespace test_framework;
 
 struct TestObj {
     int value;
     TestObj(int v = 0) : value(v) {}
 };
 
-void Test_BasicAllocDealloc() {
+// Part 1: Basic Allocation Logic
+TEST(MemoryPool_Basic) {
     MemoryPool<TestObj> pool(10);
     
     TestObj* obj = pool.allocate();
-    log_result("AllocateNotNull", obj != nullptr, "Should return valid pointer");
+    ASSERT_TRUE(obj != nullptr);
     
+    // Test placement new construction
     new (obj) TestObj(42);
-    log_result("PlacementNew", obj->value == 42, "Object construction failed");
+    ASSERT_EQ(obj->value, 42);
     
     obj->~TestObj();
     pool.deallocate(obj);
-    
-    log_result("BasicAllocDealloc", true);
 }
 
-void Test_MultipleAllocs() {
+// Part 2: Capacity and Boundary Testing
+TEST(MemoryPool_Exhaustion) {
     MemoryPool<TestObj> pool(5);
     std::vector<TestObj*> objs;
     
     for (int i = 0; i < 5; i++) {
         TestObj* obj = pool.allocate();
-        if (!obj) {
-            log_result("MultiAlloc", false, "Failed to allocate");
-            return;
-        }
+        ASSERT_TRUE(obj != nullptr);
         new (obj) TestObj(i);
         objs.push_back(obj);
     }
     
-    log_result("FullPool", pool.available() == 0, "Pool should be full");
+    // Check if the pool is correctly reporting it's full
+    ASSERT_EQ(pool.available(), 0);
+    
+    // Next allocation should return nullptr
+    ASSERT_TRUE(pool.allocate() == nullptr);
     
     for (auto obj : objs) {
         obj->~TestObj();
         pool.deallocate(obj);
     }
     
-    log_result("AfterDealloc", pool.available() == 5, "Should have 5 free");
+    ASSERT_EQ(pool.available(), 5);
 }
 
-void Test_Reuse() {
+// Part 3: Memory Reuse (The Freelink/LIFO check)
+TEST(MemoryPool_Reuse) {
     MemoryPool<TestObj> pool(3);
     
     TestObj* obj1 = pool.allocate();
-    new (obj1) TestObj(1);
-    
-    obj1->~TestObj();
     pool.deallocate(obj1);
     
+    // A standard pool should return the same address for the next allocation
     TestObj* obj2 = pool.allocate();
-    log_result("ReuseMemory", obj2 == obj1, "Should reuse memory");
+    ASSERT_TRUE(obj1 == obj2);
     
-    obj2->~TestObj();
     pool.deallocate(obj2);
 }
 
+
+
+// Part 4: Stress and Fragmentation
+TEST(MemoryPool_Stress) {
+    MemoryPool<int> pool(100);
+    std::vector<int*> ptrs;
+
+    // Rapid churn of allocations and deallocations
+    for(int i = 0; i < 500; ++i) {
+        int* p = pool.allocate();
+        if(p) ptrs.push_back(p);
+        
+        if(ptrs.size() > 20) {
+            pool.deallocate(ptrs.front());
+            ptrs.erase(ptrs.begin());
+        }
+    }
+    
+    // Clean up remaining
+    for(int* p : ptrs) pool.deallocate(p);
+    ASSERT_EQ(pool.available(), 100);
+}
+
 int main() {
-    std::cout << "--- ⚡ MEMORY POOL TESTS ⚡ ---" << std::endl;
-    Test_BasicAllocDealloc();
-    Test_MultipleAllocs();
-    Test_Reuse();
-    std::cout << "--- 🏆 ALL TESTS PASSED 🏆 ---" << std::endl;
+    std::cout << "--- ⚡ MEMORY POOL VALIDATION ⚡ ---" << std::endl;
+    
+    SECTION("Allocation & Construction");
+    SECTION("Capacity Management");
+    SECTION("Block Reuse (Freelist)");
+    SECTION("Stress Performance");
+    
+    RUN_ALL_TESTS();
+    
     return 0;
 }

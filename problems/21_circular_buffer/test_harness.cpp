@@ -92,7 +92,7 @@ TEST(StringType) {
     buf.push("beta");
     buf.push("gamma");
     buf.push("delta");
-    ASSERT_EQ(buf[1], "betanvi");
+    ASSERT_EQ(buf[1], "beta");
 }
 
 int main() {

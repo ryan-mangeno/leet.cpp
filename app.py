@@ -31,14 +31,29 @@ def load_file(problem_dir, filename):
             return f.read()
     return f"// Error: {filename} not found."
 
+def is_problem_completed(problem_name):
+    meta_path = os.path.join(PROBLEMS_DIR, problem_name, "metadata.txt")
+    if os.path.exists(meta_path):
+        with open(meta_path, "r") as f:
+            if "completed=true" in f.read():
+                return True
+    else:
+        # make metadata file if it doesn't exist
+        with open(meta_path, "w") as f:
+            f.write("completed=false\n")
+    return False
+
 st.sidebar.title("Problem Set")
 problem_list = get_problems()
 
-if not problem_list:
-    st.error(f"No problems found in '{PROBLEMS_DIR}/'. Run the setup script!")
-    st.stop()
+problem_labels = []
+for p in problem_list:
+    checkmark = " ✅" if is_problem_completed(p) else ""
+    problem_labels.append(f"{p}{checkmark}")
 
-selected_problem = st.sidebar.radio("Select a Challenge:", problem_list)
+# Map the selected label back to the actual folder name
+selected_label = st.sidebar.radio("Select a Challenge:", problem_labels)
+selected_problem = selected_label.replace(" ✅", "")
 
 # We define the specific folder for the selected problem
 current_problem_dir = os.path.join(PROBLEMS_DIR, selected_problem)
@@ -145,15 +160,33 @@ with col2:
             
             build = subprocess.run(compile_cmd, capture_output=True, text=True)
             
+            # After running the executable...
             if build.returncode != 0:
+                # CAPTURE COMPILER ERRORS HERE
                 st.session_state[output_key] = f"🔥 BUILD ERROR:\n{build.stderr}"
             else:
                 try:
                     run = subprocess.run([runner_exe], capture_output=True, text=True, timeout=20)
                     st.session_state[output_key] = run.stdout + "\n" + run.stderr
+                    
+                    # --- COMPLETION LOGIC ---
+                    # Adjust "0 failed" to match whatever your test framework outputs on success
+                    if "Failed: 0" in run.stdout or "ALL TESTS PASSED" in run.stdout:
+                        # Re-read and update metadata.txt
+                        lines = []
+                        if os.path.exists(meta_data_pth):
+                            with open(meta_data_pth, "r") as md:
+                                lines = md.readlines()
+                        
+                        # Remove existing completed flag if present
+                        new_lines = [l for l in lines if not l.startswith("completed=")]
+                        new_lines.append("completed=true\n")
+                        
+                        with open(meta_data_pth, "w") as md:
+                            md.writelines(new_lines)
+                    # ------------------------
+
                 except subprocess.TimeoutExpired:
-                     st.session_state[output_key] = "⏱TIMEOUT: Possible infinite loop/deadlock."
-                
-                if os.path.exists(runner_exe): os.remove(runner_exe)
+                    st.session_state[output_key] = "⏱TIMEOUT: Possible infinite loop/deadlock."
                 
         st.rerun()

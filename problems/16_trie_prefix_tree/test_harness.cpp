@@ -1,75 +1,90 @@
-#include <iostream>
+#include <test_framework.h>
 #include "submission.h"
+#include <string>
 
 using namespace leet_cpp;
+using namespace test_framework;
 
-void log_result(const char* name, bool passed, const char* msg = "") {
-    if (passed) {
-        std::cout << "✅ [PASS] " << name << std::endl;
-    } else {
-        std::cout << "❌ [FAIL] " << name << ": " << msg << std::endl;
-        exit(1);
-    }
-}
-
-void Test_BasicInsertSearch() {
+// Part 1: Standard Insertion and Exact Matching
+TEST(Trie_BasicSearch) {
     Trie trie;
     trie.insert("apple");
     
-    log_result("InsertSearch", trie.search("apple"), "Should find 'apple'");
-    log_result("PartialWord", !trie.search("app"), "Should not find partial 'app'");
+    ASSERT_TRUE(trie.search("apple"));
+    ASSERT_TRUE(!trie.search("app"));  // Prefix exists, but word doesn't
+    ASSERT_TRUE(!trie.search("apples")); // Super-word doesn't exist
 }
 
-void Test_Prefix() {
+// Part 2: Prefix Matching (startsWith)
+TEST(Trie_PrefixMatching) {
     Trie trie;
     trie.insert("apple");
     
-    log_result("HasPrefix", trie.startsWith("app"), "Should find prefix 'app'");
-    log_result("NoPrefix", !trie.startsWith("b"), "Should not find prefix 'b'");
+    ASSERT_TRUE(trie.startsWith("a"));
+    ASSERT_TRUE(trie.startsWith("app"));
+    ASSERT_TRUE(trie.startsWith("apple"));
+    ASSERT_TRUE(!trie.startsWith("b"));
 }
 
-void Test_CompleteAfterPrefix() {
+
+
+// Part 3: Word Overlapping Logic
+TEST(Trie_OverlappingWords) {
     Trie trie;
     trie.insert("apple");
     
-    log_result("Before", !trie.search("app"), "Should not find 'app' initially");
-    
+    // Test promoting a prefix to a full word
+    ASSERT_TRUE(!trie.search("app")); 
     trie.insert("app");
-    log_result("After", trie.search("app"), "Should find 'app' after insert");
-    log_result("Original", trie.search("apple"), "Should still find 'apple'");
+    ASSERT_TRUE(trie.search("app"));
+    
+    // Ensure the original long word is still intact
+    ASSERT_TRUE(trie.search("apple"));
 }
 
-void Test_MultipleWords() {
+// Part 4: Multiple Word Branching
+TEST(Trie_Branching) {
     Trie trie;
     trie.insert("apple");
-    trie.insert("app");
-    trie.insert("application");
     trie.insert("apply");
+    trie.insert("application");
     
-    bool all = trie.search("apple") && trie.search("app") && 
-               trie.search("application") && trie.search("apply");
-    
-    log_result("MultipleWords", all, "Should find all words");
+    ASSERT_TRUE(trie.startsWith("appl"));
+    ASSERT_TRUE(trie.search("apply"));
+    ASSERT_TRUE(trie.search("application"));
+    ASSERT_TRUE(!trie.search("appli")); // Intermediate node not marked as end
 }
 
-void Test_EdgeCases() {
+
+
+// Part 5: Edge Cases
+TEST(Trie_EdgeCases) {
     Trie trie;
+    
+    // Empty String (if supported by your implementation)
     trie.insert("");
-    log_result("EmptyString", trie.search(""), "Should handle empty string");
+    ASSERT_TRUE(trie.search(""));
     
-    trie.insert("a");
-    log_result("SingleChar", trie.search("a"), "Should handle single char");
+    // Single Character
+    trie.insert("z");
+    ASSERT_TRUE(trie.search("z"));
+    ASSERT_TRUE(trie.startsWith("z"));
     
-    log_result("NotInserted", !trie.search("xyz"), "Should not find non-existent");
+    // Non-existent Search
+    ASSERT_TRUE(!trie.search("unknown"));
+    ASSERT_TRUE(!trie.startsWith("unk"));
 }
 
 int main() {
-    std::cout << "--- ⚡ TRIE TESTS ⚡ ---" << std::endl;
-    Test_BasicInsertSearch();
-    Test_Prefix();
-    Test_CompleteAfterPrefix();
-    Test_MultipleWords();
-    Test_EdgeCases();
-    std::cout << "--- 🏆 ALL TESTS PASSED 🏆 ---" << std::endl;
+    std::cout << "--- ⚡ TRIE (PREFIX TREE) VALIDATION ⚡ ---" << std::endl;
+    
+    SECTION("Exact Word Search");
+    SECTION("Prefix Logic (startsWith)");
+    SECTION("Word Overlap & Promotion");
+    SECTION("Branching Integrity");
+    SECTION("Boundary Conditions");
+    
+    RUN_ALL_TESTS();
+    
     return 0;
 }

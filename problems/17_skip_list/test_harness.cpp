@@ -1,71 +1,107 @@
-#include <iostream>
+#include <test_framework.h>
 #include "submission.h"
+#include <vector>
 
 using namespace leet_cpp;
+using namespace test_framework;
 
-void log_result(const char* name, bool passed, const char* msg = "") {
-    if (passed) {
-        std::cout << "✅ [PASS] " << name << std::endl;
-    } else {
-        std::cout << "❌ [FAIL] " << name << ": " << msg << std::endl;
-        exit(1);
-    }
-}
-
-void Test_BasicOps() {
+// Part 1: Basic Operations (Insert & Search)
+TEST(SkipList_BasicOps) {
     SkipList list;
     list.insert(1);
     list.insert(2);
     list.insert(3);
     
-    log_result("BasicSearch", list.search(2), "Should find 2");
-    log_result("NotFound", !list.search(4), "Should not find 4");
+    ASSERT_TRUE(list.search(1));
+    ASSERT_TRUE(list.search(2));
+    ASSERT_TRUE(list.search(3));
+    ASSERT_TRUE(!list.search(4)); // Should not find non-existent
 }
 
-void Test_Erase() {
+// Part 2: Deletion Logic
+TEST(SkipList_Erase) {
     SkipList list;
-    list.insert(1);
-    list.insert(2);
-    list.insert(3);
+    list.insert(10);
+    list.insert(20);
+    list.insert(30);
     
-    log_result("EraseExists", list.erase(2), "Should erase 2");
-    log_result("AfterErase", !list.search(2), "Should not find 2 after erase");
-    log_result("EraseNonExist", !list.erase(4), "Should return false");
+    // Test erasing existing
+    ASSERT_TRUE(list.erase(20));
+    ASSERT_TRUE(!list.search(20));
+    
+    // Test erasing non-existent
+    ASSERT_TRUE(!list.erase(40));
+    
+    // Test erasing head/tail
+    ASSERT_TRUE(list.erase(10));
+    ASSERT_TRUE(list.erase(30));
+    ASSERT_TRUE(!list.search(10));
 }
 
-void Test_DuplicateInsert() {
+
+
+// Part 3: Handling Duplicate Values
+TEST(SkipList_Duplicates) {
     SkipList list;
-    list.insert(1);
-    list.insert(1);
-    list.insert(1);
+    list.insert(5);
+    list.insert(5);
+    list.insert(5);
     
-    log_result("Duplicates", list.search(1), "Should handle duplicates");
+    ASSERT_TRUE(list.search(5));
+    
+    // Erase one '5'
+    ASSERT_TRUE(list.erase(5));
+    // It should still find '5' because two more remain
+    ASSERT_TRUE(list.search(5));
 }
 
-void Test_LargeDataset() {
+// Part 4: Stress Test with Large Dataset
+TEST(SkipList_LargeDataset) {
     SkipList list;
+    const int count = 1000;
     
-    for (int i = 0; i < 1000; i += 2) {
+    // Insert even numbers
+    for (int i = 0; i < count; i += 2) {
         list.insert(i);
     }
     
-    bool all_found = true;
-    for (int i = 0; i < 1000; i += 2) {
-        if (!list.search(i)) {
-            all_found = false;
-            break;
-        }
+    // Verify all even numbers exist
+    for (int i = 0; i < count; i += 2) {
+        ASSERT_TRUE(list.search(i));
     }
     
-    log_result("LargeInsert", all_found, "Should find all elements");
+    // Verify odd numbers do NOT exist
+    for (int i = 1; i < count; i += 2) {
+        ASSERT_TRUE(!list.search(i));
+    }
+}
+
+// Part 5: Boundary Values
+TEST(SkipList_Boundaries) {
+    SkipList list;
+    int min_val = std::numeric_limits<int>::min();
+    int max_val = std::numeric_limits<int>::max();
+    
+    list.insert(min_val);
+    list.insert(max_val);
+    
+    ASSERT_TRUE(list.search(min_val));
+    ASSERT_TRUE(list.search(max_val));
+    
+    ASSERT_TRUE(list.erase(min_val));
+    ASSERT_TRUE(!list.search(min_val));
 }
 
 int main() {
-    std::cout << "--- ⚡ SKIP LIST TESTS ⚡ ---" << std::endl;
-    Test_BasicOps();
-    Test_Erase();
-    Test_DuplicateInsert();
-    Test_LargeDataset();
-    std::cout << "--- 🏆 ALL TESTS PASSED 🏆 ---" << std::endl;
+    std::cout << "--- ⚡ SKIP LIST VALIDATION ⚡ ---" << std::endl;
+    
+    SECTION("Standard Insert/Search");
+    SECTION("Node Erasure Logic");
+    SECTION("Duplicate Key Handling");
+    SECTION("Large Scale Integration");
+    SECTION("Integer Boundaries");
+    
+    RUN_ALL_TESTS();
+    
     return 0;
 }
