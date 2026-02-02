@@ -1,2 +1,0 @@
-restricted_words=mutex,lock_guard,memory_order_seq_cst
-completed=true

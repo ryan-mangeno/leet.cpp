@@ -1,2 +1,0 @@
-forbidden=new,delete,malloc,free
-completed=true

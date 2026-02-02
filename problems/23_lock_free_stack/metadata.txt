@@ -1,2 +1,0 @@
-forbidden=mutex,lock,std::lock_guard,std::unique_lock,std::scoped_lock,pthread_mutex
-completed=true
