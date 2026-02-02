@@ -89,12 +89,7 @@ col1, col2 = st.columns([1, 2])
 with col1:
     st.markdown(f"## {selected_problem.replace('_', ' ').title()}")
     st.markdown(prompt_text)
-    
-    st.markdown("---")
-    st.markdown("### Console")
     output_key = f"output_{selected_problem}"
-    if output_key in st.session_state:
-        st.code(st.session_state[output_key], language="text")
 
 with col2:
     st.markdown(f"## Code Editor ({selected_problem}/submission.h)")
@@ -127,9 +122,8 @@ with col2:
         height=st.session_state[height_key]
     )
     
-    st.session_state[session_key] = code_input
-
     if st.button("Run Tests", use_container_width=True):
+        
         # should be based on problem but quick fix for now 
         meta_data_pth = os.path.join(current_problem_dir, "metadata.txt")
         forbidden = []
@@ -158,13 +152,16 @@ with col2:
                 "-I", UTIL_DIR
             ]
             
+            print(f"Leet.cpp: Compiling with command: {' '.join(compile_cmd)} ")
             build = subprocess.run(compile_cmd, capture_output=True, text=True)
-            
+
             # After running the executable...
             if build.returncode != 0:
+                print("Leet.cpp: Build failed.")
                 # CAPTURE COMPILER ERRORS HERE
                 st.session_state[output_key] = f"🔥 BUILD ERROR:\n{build.stderr}"
             else:
+                print("Leet.cpp: Build succeeded. Running tests...")
                 try:
                     run = subprocess.run([runner_exe], capture_output=True, text=True, timeout=20)
                     st.session_state[output_key] = run.stdout + "\n" + run.stderr
@@ -190,3 +187,8 @@ with col2:
                     st.session_state[output_key] = "⏱TIMEOUT: Possible infinite loop/deadlock."
                 
         st.rerun()
+    print('\n')
+    st.session_state[session_key] = code_input
+    st.markdown("### Console")
+    if output_key in st.session_state:
+        st.code(st.session_state[output_key], language="text")

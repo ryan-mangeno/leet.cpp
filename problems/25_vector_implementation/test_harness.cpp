@@ -78,7 +78,7 @@ TEST(Part2_Destructor) {
     // if we didnt reserve then we wouldve destructed 3 times since it starts at 0, 1 when we push first, then we destruct 1 to copy 1 over, then destruct 2 to copy 2 over, then destruct 3 to copy 3 over, then finally destruct the 3 at the end
     // making a total of 6 destructions during resizing, and 3 destructors since the 3 we push back are temporaries totaling 9 destructions
     // if we reserve then we only have 3 destructions at the end since no resizing happens + 3 destructions for the temporaries totaling 6 destructions
-    ASSERT_TRUE(LifecycleTracker::constructed == 3 && LifecycleTracker::destructed == 3);
+    ASSERT_TRUE(LifecycleTracker::constructed == 3 && LifecycleTracker::destructed == 6);
 
     LifecycleTracker::reset();
     {
